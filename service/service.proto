@@ -1,0 +1,96 @@
+syntax = "proto3";
+
+option go_package = "github.com/pyneda/nuclei-api/service";
+
+service NucleiApi {
+  rpc Scan (ScanRequest) returns (stream ScanResult) {}
+}
+
+// https://github.com/projectdiscovery/nuclei/blob/bb98eced070f4ae137b8cd2a7f887611bc1b9c93/v2/pkg/types/types.go#L13
+message ScanRequest {
+  string url = 1;
+  bool automatic_scan = 2;
+  repeated string tags = 3;
+  repeated string exclude_tags = 4;
+  repeated string workflows = 5;
+  repeated string workflow_urls = 6;
+  repeated string templates = 7;
+  repeated string template_urls = 8;
+  repeated string excluded_templates = 9;
+  repeated string exclude_matchers = 10;
+  repeated string custom_headers = 11;
+  repeated string severities = 12;
+  repeated string exclude_severities = 13;
+  repeated string authors = 14;
+  repeated string protocols = 15;
+  repeated string exclude_protocols = 16;
+  repeated string include_tags = 17;
+  repeated string include_templates = 18;
+  repeated string include_ids = 19;
+  repeated string exclude_ids = 20;
+
+  // Vars
+  // RemoteTemplateDomainList: should probably be configured when starting the API
+
+}
+
+
+message ScanResponse {
+  string id = 1;
+}
+
+
+// https://github.com/projectdiscovery/nuclei/blob/bb98eced070f4ae137b8cd2a7f887611bc1b9c93/v2/pkg/output/output.go#L103
+message ScanResult {
+  string template_id = 1;
+  string template = 2;
+  ScanResultInfo info = 3;
+  string matcher_name = 4;
+  string extractor_name = 5;
+  string type = 6;
+  string host = 7;
+  string path = 8;
+  string matched = 9;
+  repeated string extracted_results = 10;
+  string request = 11;
+  string response = 12;
+  string ip = 13;
+  string timestamp = 14;
+  Interaction interaction = 15;
+  string curl_command = 16;
+  bool matcher_status = 17;
+  // metadata
+}
+
+// https://github.com/projectdiscovery/nuclei/blob/main/v2/pkg/model/model.go#L9
+message ScanResultInfo {
+  string name = 1;
+  string description = 2;
+  string severity = 3;
+  string remediation = 4;
+  repeated string tags = 5;
+  repeated string references = 6;
+  ScanResultClassification classification = 7;
+  // metadata
+}
+
+message ScanResultClassification {
+  repeated string cves = 1;
+  repeated string cwes = 2;
+  string cpe = 3;
+  string cvss_vector = 4;
+  double cvss_score = 5;
+}
+
+// https://github.com/projectdiscovery/interactsh/blob/539c2ddea675a4198663a1ef9d0a15f86587ad54/pkg/server/server.go#L13
+message Interaction {
+  string protocol = 1;
+  string unique_id = 2;
+  string full_id = 3;
+  string qtype = 4;
+  string raw_request = 5;
+  string raw_response = 6;
+  string smtp_from = 7;
+  string remote_address = 8;
+  string timestamp = 9;
+}
