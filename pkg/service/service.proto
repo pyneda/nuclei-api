@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = "github.com/pyneda/nuclei-api/service";
+option go_package = "github.com/pyneda/nuclei-api/pkg/service";
 
 service NucleiApi {
   rpc Scan (ScanRequest) returns (stream ScanResult) {}

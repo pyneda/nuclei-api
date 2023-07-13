@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	pb "github.com/pyneda/nuclei-api/service"
+	pb "github.com/pyneda/nuclei-api/pkg/service"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"

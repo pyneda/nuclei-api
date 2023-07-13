@@ -4,6 +4,7 @@ go 1.20
 
 require (
 	github.com/logrusorgru/aurora v2.0.3+incompatible
+	github.com/projectdiscovery/goflags v0.1.10
 	github.com/projectdiscovery/nuclei/v2 v2.9.8
 	github.com/projectdiscovery/ratelimit v0.0.9
 	github.com/spf13/cobra v1.7.0
@@ -131,7 +132,6 @@ require (
 	github.com/projectdiscovery/fastdialer v0.0.32 // indirect
 	github.com/projectdiscovery/fasttemplate v0.0.2 // indirect
 	github.com/projectdiscovery/freeport v0.0.5 // indirect
-	github.com/projectdiscovery/goflags v0.1.10 // indirect
 	github.com/projectdiscovery/gologger v1.1.10 // indirect
 	github.com/projectdiscovery/hmap v0.0.13 // indirect
 	github.com/projectdiscovery/interactsh v1.1.4 // indirect
