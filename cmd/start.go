@@ -1,23 +1,8 @@
-/*
-Copyright © 2023 NAME HERE <EMAIL ADDRESS>
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-	http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 package cmd
 
 import (
-	"github.com/pyneda/nuclei-api/server"
-	pb "github.com/pyneda/nuclei-api/service"
+	"github.com/pyneda/nuclei-api/pkg/server"
+	pb "github.com/pyneda/nuclei-api/pkg/service"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -26,17 +11,21 @@ import (
 	"net"
 )
 
+var (
+	listenAddress string
+)
+
 // startCmd represents the start command
 var startCmd = &cobra.Command{
 	Use:   "start",
-	Short: "A brief description of your command",
+	Short: "Starts the GRPC server for nuclei-api",
 
 	Run: func(cmd *cobra.Command, args []string) {
-		log.Println("Starting nuclei-api server...")
-		listener, err := net.Listen("tcp", ":8555")
+		listener, err := net.Listen("tcp", listenAddress)
 		if err != nil {
-			panic(err)
+			log.Fatalf("failed to listen: %v", err)
 		}
+		log.Println("Started nuclei-api server on ", listenAddress)
 
 		s := grpc.NewServer()
 		pb.RegisterNucleiApiServer(s, &server.Server{})
@@ -49,14 +38,5 @@ var startCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(startCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// startCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// startCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	startCmd.Flags().StringVarP(&listenAddress, "address", "a", ":8555", "Address to listen on")
 }

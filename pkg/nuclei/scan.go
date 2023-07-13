@@ -28,7 +28,7 @@ import (
 	"github.com/projectdiscovery/nuclei/v2/pkg/testutils"
 	"github.com/projectdiscovery/nuclei/v2/pkg/types"
 	"github.com/projectdiscovery/ratelimit"
-	pb "github.com/pyneda/nuclei-api/service"
+	pb "github.com/pyneda/nuclei-api/pkg/service"
 )
 
 func printFields(resultEvent output.ResultEvent) {
@@ -187,9 +187,8 @@ func Scan(scanRequest *pb.ScanRequest, stream pb.NucleiApi_ScanServer) {
 	inputArgs := []*contextargs.MetaInput{}
 
 	for _, target := range scanRequest.GetTargets() {
-			inputArgs = append(inputArgs, &contextargs.MetaInput{Input: target})
+		inputArgs = append(inputArgs, &contextargs.MetaInput{Input: target})
 	}
-
 
 	input := &inputs.SimpleInputProvider{Inputs: inputArgs}
 	_ = engine.Execute(store.Templates(), input)

@@ -1,8 +1,8 @@
 package server
 
 import (
-	"github.com/pyneda/nuclei-api/nuclei"
-	pb "github.com/pyneda/nuclei-api/service"
+	"github.com/pyneda/nuclei-api/pkg/nuclei"
+	pb "github.com/pyneda/nuclei-api/pkg/service"
 	"log"
 )
 

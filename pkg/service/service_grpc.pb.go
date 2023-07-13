@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v3.12.4
-// source: service/service.proto
+// source: pkg/service/service.proto
 
 package service
 
@@ -128,5 +128,5 @@ var NucleiApi_ServiceDesc = grpc.ServiceDesc{
 			ServerStreams: true,
 		},
 	},
-	Metadata: "service/service.proto",
+	Metadata: "pkg/service/service.proto",
 }
