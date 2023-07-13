@@ -10,7 +10,7 @@ import (
 	"reflect"
 	"time"
 
-	// "github.com/projectdiscovery/goflags"
+	"github.com/projectdiscovery/goflags"
 	// "github.com/projectdiscovery/nuclei/v2/pkg/catalog/config"
 	"github.com/projectdiscovery/nuclei/v2/pkg/catalog/disk"
 	"github.com/projectdiscovery/nuclei/v2/pkg/catalog/loader"
@@ -95,6 +95,12 @@ func eventToScanResult(event *output.ResultEvent) *pb.ScanResult {
 	}
 }
 
+func assignIfNotEmpty(dst *goflags.StringSlice, src *[]string) {
+	if len(*src) > 0 {
+		*dst = *src
+	}
+}
+
 func Scan(scanRequest *pb.ScanRequest, stream pb.NucleiApi_ScanServer) {
 	cache := hosterrorscache.New(30, hosterrorscache.DefaultMaxHostsCount, nil)
 	defer cache.Close()
@@ -105,20 +111,42 @@ func Scan(scanRequest *pb.ScanRequest, stream pb.NucleiApi_ScanServer) {
 
 	outputWriter := testutils.NewMockOutputWriter()
 	outputWriter.WriteCallback = func(event *output.ResultEvent) {
-		printFields(*event)
+		// printFields(*event)
+		log.Printf("Got Result: %v\n", event.TemplateID)
 		result := eventToScanResult(event)
 		stream.Send(result)
 	}
 
 	defaultOpts := types.DefaultOptions()
-	protocolstate.Init(defaultOpts)
-	protocolinit.Init(defaultOpts)
 
 	defaultOpts.AutomaticScan = scanRequest.AutomaticScan
+	defaultOpts.Headless = scanRequest.Headless
+	defaultOpts.NewTemplates = scanRequest.NewTemplates
+	assignIfNotEmpty(&defaultOpts.Tags, &scanRequest.Tags)
+	assignIfNotEmpty(&defaultOpts.ExcludeTags, &scanRequest.ExcludeTags)
+	assignIfNotEmpty(&defaultOpts.Workflows, &scanRequest.Workflows)
+	assignIfNotEmpty(&defaultOpts.WorkflowURLs, &scanRequest.WorkflowUrls)
+	assignIfNotEmpty(&defaultOpts.Templates, &scanRequest.Templates)
+	assignIfNotEmpty(&defaultOpts.TemplateURLs, &scanRequest.TemplateUrls)
+	assignIfNotEmpty(&defaultOpts.ExcludedTemplates, &scanRequest.ExcludedTemplates)
+	assignIfNotEmpty(&defaultOpts.ExcludeMatchers, &scanRequest.ExcludeMatchers)
+
+	// assignIfNotEmpty(defaultOpts.Severities, scanRequest.Severities)
+	// assignIfNotEmpty(defaultOpts.ExcludeSeverities, scanRequest.ExcludeSeverities)
+	assignIfNotEmpty(&defaultOpts.Authors, &scanRequest.Authors)
+	// https://github.com/projectdiscovery/nuclei/blob/bb98eced070f4ae137b8cd2a7f887611bc1b9c93/v2/pkg/templates/types/types.go#L15
+	// assignIfNotEmpty(defaultOpts.Protocols, scanRequest.Protocols)
+	// assignIfNotEmpty(defaultOpts.ExcludeProtocols, scanRequest.ExcludeProtocols)
+	assignIfNotEmpty(&defaultOpts.IncludeTags, &scanRequest.IncludeTags)
+	assignIfNotEmpty(&defaultOpts.IncludeTemplates, &scanRequest.IncludeTemplates)
+	assignIfNotEmpty(&defaultOpts.IncludeIds, &scanRequest.IncludeIds)
+	assignIfNotEmpty(&defaultOpts.ExcludeIds, &scanRequest.ExcludeIds)
 
 	// defaultOpts.IncludeIds = goflags.StringSlice{"cname-service", "hackerone"}
 	// defaultOpts.ExcludeTags = config.ReadIgnoreFile().Tags
 	// defaultOpts.Workflows = goflags.StringSlice{"workflows/kong-workflow.yaml"}
+	protocolstate.Init(defaultOpts)
+	protocolinit.Init(defaultOpts)
 
 	interactOpts := interactsh.DefaultOptions(outputWriter, reportingClient, mockProgress)
 	interactClient, err := interactsh.New(interactOpts)
@@ -156,9 +184,16 @@ func Scan(scanRequest *pb.ScanRequest, stream pb.NucleiApi_ScanServer) {
 	}
 	store.Load()
 
-	inputArgs := []*contextargs.MetaInput{{Input: scanRequest.GetUrl()}}
+	inputArgs := []*contextargs.MetaInput{}
+
+	for _, target := range scanRequest.GetTargets() {
+			inputArgs = append(inputArgs, &contextargs.MetaInput{Input: target})
+	}
+
 
 	input := &inputs.SimpleInputProvider{Inputs: inputArgs}
 	_ = engine.Execute(store.Templates(), input)
 	engine.WorkPool().Wait() // Wait for the scan to finish
+	time.Sleep(1 * time.Second)
+	log.Println("Scan finished")
 }

@@ -17,7 +17,6 @@ package cmd
 
 import (
 	"context"
-	"fmt"
 	pb "github.com/pyneda/nuclei-api/service"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
@@ -27,16 +26,22 @@ import (
 	"time"
 )
 
+var (
+	scanRequest = &pb.ScanRequest{}
+)
+
 // clientCmd represents the client command
 var clientCmd = &cobra.Command{
 	Use:   "client",
 	Short: "A brief description of your command",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("client called")
-		target, err := cmd.Flags().GetString("target")
-		if err != nil {
-			log.Fatalf("Error parsing flags: %v", err)
+		if len(scanRequest.Targets) == 0 {
+			log.Fatal("Target is required")
+			return
 		}
+
+		log.Println("Requesting scan for targets: ", scanRequest.Targets)
+
 		conn, err := grpc.Dial("localhost:8555", grpc.WithTransportCredentials(insecure.NewCredentials()))
 		if err != nil {
 			log.Fatalf("did not connect: %v", err)
@@ -47,10 +52,7 @@ var clientCmd = &cobra.Command{
 		// Contact the server and print out its response.
 		ctx, cancel := context.WithTimeout(context.Background(), time.Minute*60)
 		defer cancel()
-		stream, err := c.Scan(ctx, &pb.ScanRequest{
-			Url:           target,
-			AutomaticScan: true,
-		})
+		stream, err := c.Scan(ctx, scanRequest)
 		if err != nil {
 			log.Fatalf("Error: %v", err)
 		}
@@ -69,15 +71,19 @@ var clientCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(clientCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// clientCmd.PersistentFlags().String("foo", "", "A help for foo")
-	clientCmd.Flags().StringP("target", "t", "", "Target to scan")
+	clientCmd.Flags().StringSliceVarP(&scanRequest.Targets, "target", "t", []string{}, "Target to scan")
 	clientCmd.MarkFlagRequired("target")
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// clientCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	clientCmd.Flags().BoolVarP(&scanRequest.AutomaticScan, "automatic-scan", "a", false, "Automatic scan")
+	clientCmd.Flags().StringSliceVar(&scanRequest.IncludeIds, "ids", []string{}, "Include IDS")
+	clientCmd.Flags().StringSliceVar(&scanRequest.ExcludeIds, "exclude-ids", []string{}, "Exclude IDS")
+	clientCmd.Flags().StringSliceVar(&scanRequest.Tags, "tags", []string{}, "Tags to include")
+	clientCmd.Flags().StringSliceVar(&scanRequest.ExcludeTags, "exclude-tags", []string{}, "Tags to exclude")
+	clientCmd.Flags().StringSliceVar(&scanRequest.Workflows, "workflows", []string{}, "Workflows to include")
+	clientCmd.Flags().StringSliceVar(&scanRequest.WorkflowUrls, "workflow-urls", []string{}, "Workflows to include")
+	clientCmd.Flags().StringSliceVar(&scanRequest.Templates, "templates", []string{}, "Templates to include")
+	clientCmd.Flags().StringSliceVar(&scanRequest.TemplateUrls, "template-urls", []string{}, "Templates to include")
+	clientCmd.Flags().StringSliceVar(&scanRequest.ExcludedTemplates, "excluded-templates", []string{}, "Templates to exclude")
+	clientCmd.Flags().StringSliceVar(&scanRequest.Authors, "authors", []string{}, "Authors to include")
+	clientCmd.Flags().StringSliceVar(&scanRequest.ExcludeMatchers, "exclude-matchers", []string{}, "Matchers to exclude")
+
 }

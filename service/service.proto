@@ -8,7 +8,7 @@ service NucleiApi {
 
 // https://github.com/projectdiscovery/nuclei/blob/bb98eced070f4ae137b8cd2a7f887611bc1b9c93/v2/pkg/types/types.go#L13
 message ScanRequest {
-  string url = 1;
+  repeated string targets = 1;
   bool automatic_scan = 2;
   repeated string tags = 3;
   repeated string exclude_tags = 4;
@@ -28,6 +28,8 @@ message ScanRequest {
   repeated string include_templates = 18;
   repeated string include_ids = 19;
   repeated string exclude_ids = 20;
+  bool headless = 21;
+  bool new_templates = 22;
 
   // Vars
   // RemoteTemplateDomainList: should probably be configured when starting the API
