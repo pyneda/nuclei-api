@@ -15,12 +15,12 @@ var severityMappings = map[severity.Severity]string{
 	severity.Unknown:  "unknown",
 }
 
-func normalizeValue(value string) string {
+func normalizeSeverityValue(value string) string {
 	return strings.TrimSpace(strings.ToLower(value))
 }
 
 func stringToSeverity(severityString string) (severity.Severity, error) {
-	normalizedValue := normalizeValue(severityString)
+	normalizedValue := normalizeSeverityValue(severityString)
 	for key, currentValue := range severityMappings {
 		if normalizedValue == currentValue {
 			return key, nil

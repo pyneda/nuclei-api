@@ -2,16 +2,7 @@ package nuclei
 
 import (
 	"context"
-	"fmt"
 	"github.com/logrusorgru/aurora"
-	"log"
-	"os"
-	"path"
-	"reflect"
-	"time"
-
-	"github.com/projectdiscovery/goflags"
-	// "github.com/projectdiscovery/nuclei/v2/pkg/catalog/config"
 	"github.com/projectdiscovery/nuclei/v2/pkg/catalog/disk"
 	"github.com/projectdiscovery/nuclei/v2/pkg/catalog/loader"
 	"github.com/projectdiscovery/nuclei/v2/pkg/core"
@@ -27,18 +18,13 @@ import (
 	"github.com/projectdiscovery/nuclei/v2/pkg/reporting"
 	"github.com/projectdiscovery/nuclei/v2/pkg/testutils"
 	"github.com/projectdiscovery/nuclei/v2/pkg/types"
-
 	"github.com/projectdiscovery/ratelimit"
 	pb "github.com/pyneda/nuclei-api/pkg/service"
+	"log"
+	"os"
+	"path"
+	"time"
 )
-
-func printFields(resultEvent output.ResultEvent) {
-	v := reflect.ValueOf(resultEvent)
-
-	for i := 0; i < v.NumField(); i++ {
-		fmt.Printf("%v: %v\n", v.Type().Field(i).Name, v.Field(i).Interface())
-	}
-}
 
 func eventToScanResult(event *output.ResultEvent) *pb.ScanResult {
 	var info *pb.ScanResultInfo
@@ -96,12 +82,6 @@ func eventToScanResult(event *output.ResultEvent) *pb.ScanResult {
 	}
 }
 
-func assignIfNotEmpty(dst *goflags.StringSlice, src *[]string) {
-	if len(*src) > 0 {
-		*dst = *src
-	}
-}
-
 func Scan(scanRequest *pb.ScanRequest, stream pb.NucleiApi_ScanServer) {
 	cache := hosterrorscache.New(30, hosterrorscache.DefaultMaxHostsCount, nil)
 	defer cache.Close()
@@ -131,6 +111,11 @@ func Scan(scanRequest *pb.ScanRequest, stream pb.NucleiApi_ScanServer) {
 	assignIfNotEmpty(&defaultOpts.TemplateURLs, &scanRequest.TemplateUrls)
 	assignIfNotEmpty(&defaultOpts.ExcludedTemplates, &scanRequest.ExcludedTemplates)
 	assignIfNotEmpty(&defaultOpts.ExcludeMatchers, &scanRequest.ExcludeMatchers)
+	assignIfNotEmpty(&defaultOpts.Authors, &scanRequest.Authors)
+	assignIfNotEmpty(&defaultOpts.IncludeTags, &scanRequest.IncludeTags)
+	assignIfNotEmpty(&defaultOpts.IncludeTemplates, &scanRequest.IncludeTemplates)
+	assignIfNotEmpty(&defaultOpts.IncludeIds, &scanRequest.IncludeIds)
+	assignIfNotEmpty(&defaultOpts.ExcludeIds, &scanRequest.ExcludeIds)
 
 	for _, severityString := range scanRequest.Severities {
 		convertedSeverity, err := stringToSeverity(severityString)
@@ -148,18 +133,23 @@ func Scan(scanRequest *pb.ScanRequest, stream pb.NucleiApi_ScanServer) {
 		}
 		defaultOpts.ExcludeSeverities.Set(convertedSeverity.String())
 	}
-	assignIfNotEmpty(&defaultOpts.Authors, &scanRequest.Authors)
-	// https://github.com/projectdiscovery/nuclei/blob/bb98eced070f4ae137b8cd2a7f887611bc1b9c93/v2/pkg/templates/types/types.go#L15
-	// assignIfNotEmpty(defaultOpts.Protocols, scanRequest.Protocols)
-	// assignIfNotEmpty(defaultOpts.ExcludeProtocols, scanRequest.ExcludeProtocols)
-	assignIfNotEmpty(&defaultOpts.IncludeTags, &scanRequest.IncludeTags)
-	assignIfNotEmpty(&defaultOpts.IncludeTemplates, &scanRequest.IncludeTemplates)
-	assignIfNotEmpty(&defaultOpts.IncludeIds, &scanRequest.IncludeIds)
-	assignIfNotEmpty(&defaultOpts.ExcludeIds, &scanRequest.ExcludeIds)
+	for _, protocolString := range scanRequest.Protocols {
+		convertedProtocol, err := stringToProtocol(protocolString)
+		if err != nil {
+			log.Printf("Invalid protocol: %s", protocolString)
+			continue
+		}
+		defaultOpts.Protocols.Set(convertedProtocol.String())
+	}
+	for _, protocolString := range scanRequest.ExcludeProtocols {
+		convertedProtocol, err := stringToProtocol(protocolString)
+		if err != nil {
+			log.Printf("Invalid protocol: %s", protocolString)
+			continue
+		}
+		defaultOpts.ExcludeProtocols.Set(convertedProtocol.String())
+	}
 
-	// defaultOpts.IncludeIds = goflags.StringSlice{"cname-service", "hackerone"}
-	// defaultOpts.ExcludeTags = config.ReadIgnoreFile().Tags
-	// defaultOpts.Workflows = goflags.StringSlice{"workflows/kong-workflow.yaml"}
 	protocolstate.Init(defaultOpts)
 	protocolinit.Init(defaultOpts)
 
@@ -208,6 +198,5 @@ func Scan(scanRequest *pb.ScanRequest, stream pb.NucleiApi_ScanServer) {
 	input := &inputs.SimpleInputProvider{Inputs: inputArgs}
 	_ = engine.Execute(store.Templates(), input)
 	engine.WorkPool().Wait() // Wait for the scan to finish
-	time.Sleep(1 * time.Second)
 	log.Println("Scan finished")
 }
