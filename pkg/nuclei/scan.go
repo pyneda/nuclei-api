@@ -27,6 +27,7 @@ import (
 	"github.com/projectdiscovery/nuclei/v2/pkg/reporting"
 	"github.com/projectdiscovery/nuclei/v2/pkg/testutils"
 	"github.com/projectdiscovery/nuclei/v2/pkg/types"
+
 	"github.com/projectdiscovery/ratelimit"
 	pb "github.com/pyneda/nuclei-api/pkg/service"
 )
@@ -131,8 +132,22 @@ func Scan(scanRequest *pb.ScanRequest, stream pb.NucleiApi_ScanServer) {
 	assignIfNotEmpty(&defaultOpts.ExcludedTemplates, &scanRequest.ExcludedTemplates)
 	assignIfNotEmpty(&defaultOpts.ExcludeMatchers, &scanRequest.ExcludeMatchers)
 
-	// assignIfNotEmpty(defaultOpts.Severities, scanRequest.Severities)
-	// assignIfNotEmpty(defaultOpts.ExcludeSeverities, scanRequest.ExcludeSeverities)
+	for _, severityString := range scanRequest.Severities {
+		convertedSeverity, err := stringToSeverity(severityString)
+		if err != nil {
+			log.Printf("Invalid severity: %s", severityString)
+			continue
+		}
+		defaultOpts.Severities.Set(convertedSeverity.String())
+	}
+	for _, severityString := range scanRequest.ExcludeSeverities {
+		convertedSeverity, err := stringToSeverity(severityString)
+		if err != nil {
+			log.Printf("Invalid severity: %s", severityString)
+			continue
+		}
+		defaultOpts.ExcludeSeverities.Set(convertedSeverity.String())
+	}
 	assignIfNotEmpty(&defaultOpts.Authors, &scanRequest.Authors)
 	// https://github.com/projectdiscovery/nuclei/blob/bb98eced070f4ae137b8cd2a7f887611bc1b9c93/v2/pkg/templates/types/types.go#L15
 	// assignIfNotEmpty(defaultOpts.Protocols, scanRequest.Protocols)
