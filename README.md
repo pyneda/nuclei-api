@@ -1,6 +1,6 @@
 # Nuclei API
 
-The Nuclei API package provides a simple gRPC API wrapper around the Nuclei scanner, allowing easy integration with other tools.
+The Nuclei API package provides a simple gRPC wrapper around the [Nuclei scanner](https://github.com/projectdiscovery/nuclei), allowing easy integration with other tools.
 
 
 ## Installation
@@ -31,5 +31,5 @@ An example client is provided in the `cmd/example` directory.
 It can be built with:
 
 ```bash
-go build cmd/client/main.go
+go build cmd/example/client.go
 ```
