@@ -25,7 +25,7 @@ var startCmd = &cobra.Command{
 		if err != nil {
 			log.Fatalf("failed to listen: %v", err)
 		}
-		log.Println("Started nuclei-api server on ", listenAddress)
+		log.Println("Started nuclei-api server on:", listenAddress)
 
 		s := grpc.NewServer()
 		pb.RegisterNucleiApiServer(s, &server.Server{})
@@ -38,5 +38,5 @@ var startCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(startCmd)
-	startCmd.Flags().StringVarP(&listenAddress, "address", "a", ":8555", "Address to listen on")
+	startCmd.Flags().StringVarP(&listenAddress, "address", "a", "localhost:8555", "Address to listen on")
 }

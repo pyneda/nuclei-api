@@ -1,3 +1,4 @@
 nuclei-api
 Taskfile.yaml
 client
+.nuclei-api.yaml

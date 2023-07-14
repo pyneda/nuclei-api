@@ -20,8 +20,20 @@ go build
 
 ## Usage
 
+Start the server:
+
 ```bash
 nuclei-api start -h
+```
+
+### Configuration
+
+Most of the options available in Nuclei to choose and filter templates are available as a part of the scan request.
+
+Other options such as rate limits, interactsh configuration, etc are available as a part of the server configuration which can be configured using a YAML file. The following command is available to dump the default configuration:
+
+```bash
+nuclei-api dumpconfig
 ```
 
 ## Example client

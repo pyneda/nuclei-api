@@ -98,7 +98,7 @@ func Scan(scanRequest *pb.ScanRequest, stream pb.NucleiApi_ScanServer) {
 		stream.Send(result)
 	}
 
-	defaultOpts := types.DefaultOptions()
+	defaultOpts := getDefaultOptions()
 
 	defaultOpts.AutomaticScan = scanRequest.AutomaticScan
 	defaultOpts.Headless = scanRequest.Headless
