@@ -54,8 +54,8 @@ message ScanResult {
   string path = 8;
   string matched = 9;
   repeated string extracted_results = 10;
-  string request = 11;
-  string response = 12;
+  bytes request = 11;
+  bytes response = 12;
   string ip = 13;
   string timestamp = 14;
   Interaction interaction = 15;
@@ -90,8 +90,8 @@ message Interaction {
   string unique_id = 2;
   string full_id = 3;
   string qtype = 4;
-  string raw_request = 5;
-  string raw_response = 6;
+  bytes raw_request = 5;
+  bytes raw_response = 6;
   string smtp_from = 7;
   string remote_address = 8;
   string timestamp = 9;

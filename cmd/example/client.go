@@ -74,7 +74,8 @@ func init() {
 	ClientCmd.Flags().StringSliceVar(&scanRequest.ExcludeMatchers, "exclude-matchers", []string{}, "Matchers to exclude")
 	ClientCmd.Flags().StringSliceVar(&scanRequest.Severities, "severities", []string{}, "Severities to include")
 	ClientCmd.Flags().StringSliceVar(&scanRequest.ExcludeSeverities, "exclude-severities", []string{}, "Severities to exclude")
-
+	ClientCmd.Flags().StringSliceVar(&scanRequest.Protocols, "protocols", []string{}, "Protocols to include")
+	ClientCmd.Flags().StringSliceVar(&scanRequest.ExcludeProtocols, "exclude-protocols", []string{}, "Protocols to exclude")
 }
 
 func main() {
