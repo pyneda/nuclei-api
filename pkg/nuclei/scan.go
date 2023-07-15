@@ -95,7 +95,10 @@ func Scan(scanRequest *pb.ScanRequest, stream pb.NucleiApi_ScanServer) {
 		// printFields(*event)
 		log.Printf("Got Result: %v\n", event.TemplateID)
 		result := eventToScanResult(event)
-		stream.Send(result)
+		err := stream.Send(result)
+		if err != nil {
+			log.Printf("Error sending %v result to client: %v", event.TemplateID, err)
+		}
 	}
 
 	defaultOpts := getDefaultOptions()
